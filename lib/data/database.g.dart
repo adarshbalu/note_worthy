@@ -12,15 +12,21 @@ class Note extends DataClass implements Insertable<Note> {
   final String title;
   final String description;
   final String category;
+  final String type;
   final DateTime dateCreated;
+  final DateTime dueDate;
   final bool completed;
+  final bool important;
   Note(
       {@required this.id,
       @required this.title,
       @required this.description,
       @required this.category,
+      @required this.type,
       @required this.dateCreated,
-      @required this.completed});
+      @required this.dueDate,
+      @required this.completed,
+      @required this.important});
   factory Note.fromData(Map<String, dynamic> data, GeneratedDatabase db,
       {String prefix}) {
     final effectivePrefix = prefix ?? '';
@@ -36,10 +42,15 @@ class Note extends DataClass implements Insertable<Note> {
           .mapFromDatabaseResponse(data['${effectivePrefix}description']),
       category: stringType
           .mapFromDatabaseResponse(data['${effectivePrefix}category']),
+      type: stringType.mapFromDatabaseResponse(data['${effectivePrefix}type']),
       dateCreated: dateTimeType
           .mapFromDatabaseResponse(data['${effectivePrefix}date_created']),
+      dueDate: dateTimeType
+          .mapFromDatabaseResponse(data['${effectivePrefix}due_date']),
       completed:
           boolType.mapFromDatabaseResponse(data['${effectivePrefix}completed']),
+      important:
+          boolType.mapFromDatabaseResponse(data['${effectivePrefix}important']),
     );
   }
   @override
@@ -57,11 +68,20 @@ class Note extends DataClass implements Insertable<Note> {
     if (!nullToAbsent || category != null) {
       map['category'] = Variable<String>(category);
     }
+    if (!nullToAbsent || type != null) {
+      map['type'] = Variable<String>(type);
+    }
     if (!nullToAbsent || dateCreated != null) {
       map['date_created'] = Variable<DateTime>(dateCreated);
     }
+    if (!nullToAbsent || dueDate != null) {
+      map['due_date'] = Variable<DateTime>(dueDate);
+    }
     if (!nullToAbsent || completed != null) {
       map['completed'] = Variable<bool>(completed);
+    }
+    if (!nullToAbsent || important != null) {
+      map['important'] = Variable<bool>(important);
     }
     return map;
   }
@@ -77,12 +97,19 @@ class Note extends DataClass implements Insertable<Note> {
       category: category == null && nullToAbsent
           ? const Value.absent()
           : Value(category),
+      type: type == null && nullToAbsent ? const Value.absent() : Value(type),
       dateCreated: dateCreated == null && nullToAbsent
           ? const Value.absent()
           : Value(dateCreated),
+      dueDate: dueDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dueDate),
       completed: completed == null && nullToAbsent
           ? const Value.absent()
           : Value(completed),
+      important: important == null && nullToAbsent
+          ? const Value.absent()
+          : Value(important),
     );
   }
 
@@ -94,8 +121,11 @@ class Note extends DataClass implements Insertable<Note> {
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String>(json['description']),
       category: serializer.fromJson<String>(json['category']),
+      type: serializer.fromJson<String>(json['type']),
       dateCreated: serializer.fromJson<DateTime>(json['dateCreated']),
+      dueDate: serializer.fromJson<DateTime>(json['dueDate']),
       completed: serializer.fromJson<bool>(json['completed']),
+      important: serializer.fromJson<bool>(json['important']),
     );
   }
   @override
@@ -106,8 +136,11 @@ class Note extends DataClass implements Insertable<Note> {
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String>(description),
       'category': serializer.toJson<String>(category),
+      'type': serializer.toJson<String>(type),
       'dateCreated': serializer.toJson<DateTime>(dateCreated),
+      'dueDate': serializer.toJson<DateTime>(dueDate),
       'completed': serializer.toJson<bool>(completed),
+      'important': serializer.toJson<bool>(important),
     };
   }
 
@@ -116,15 +149,21 @@ class Note extends DataClass implements Insertable<Note> {
           String title,
           String description,
           String category,
+          String type,
           DateTime dateCreated,
-          bool completed}) =>
+          DateTime dueDate,
+          bool completed,
+          bool important}) =>
       Note(
         id: id ?? this.id,
         title: title ?? this.title,
         description: description ?? this.description,
         category: category ?? this.category,
+        type: type ?? this.type,
         dateCreated: dateCreated ?? this.dateCreated,
+        dueDate: dueDate ?? this.dueDate,
         completed: completed ?? this.completed,
+        important: important ?? this.important,
       );
   @override
   String toString() {
@@ -133,8 +172,11 @@ class Note extends DataClass implements Insertable<Note> {
           ..write('title: $title, ')
           ..write('description: $description, ')
           ..write('category: $category, ')
+          ..write('type: $type, ')
           ..write('dateCreated: $dateCreated, ')
-          ..write('completed: $completed')
+          ..write('dueDate: $dueDate, ')
+          ..write('completed: $completed, ')
+          ..write('important: $important')
           ..write(')'))
         .toString();
   }
@@ -146,8 +188,16 @@ class Note extends DataClass implements Insertable<Note> {
           title.hashCode,
           $mrjc(
               description.hashCode,
-              $mrjc(category.hashCode,
-                  $mrjc(dateCreated.hashCode, completed.hashCode))))));
+              $mrjc(
+                  category.hashCode,
+                  $mrjc(
+                      type.hashCode,
+                      $mrjc(
+                          dateCreated.hashCode,
+                          $mrjc(
+                              dueDate.hashCode,
+                              $mrjc(completed.hashCode,
+                                  important.hashCode)))))))));
   @override
   bool operator ==(dynamic other) =>
       identical(this, other) ||
@@ -156,8 +206,11 @@ class Note extends DataClass implements Insertable<Note> {
           other.title == this.title &&
           other.description == this.description &&
           other.category == this.category &&
+          other.type == this.type &&
           other.dateCreated == this.dateCreated &&
-          other.completed == this.completed);
+          other.dueDate == this.dueDate &&
+          other.completed == this.completed &&
+          other.important == this.important);
 }
 
 class NotesCompanion extends UpdateCompanion<Note> {
@@ -165,42 +218,59 @@ class NotesCompanion extends UpdateCompanion<Note> {
   final Value<String> title;
   final Value<String> description;
   final Value<String> category;
+  final Value<String> type;
   final Value<DateTime> dateCreated;
+  final Value<DateTime> dueDate;
   final Value<bool> completed;
+  final Value<bool> important;
   const NotesCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
     this.description = const Value.absent(),
     this.category = const Value.absent(),
+    this.type = const Value.absent(),
     this.dateCreated = const Value.absent(),
+    this.dueDate = const Value.absent(),
     this.completed = const Value.absent(),
+    this.important = const Value.absent(),
   });
   NotesCompanion.insert({
     this.id = const Value.absent(),
     @required String title,
     @required String description,
     @required String category,
+    @required String type,
     @required DateTime dateCreated,
+    @required DateTime dueDate,
     this.completed = const Value.absent(),
+    this.important = const Value.absent(),
   })  : title = Value(title),
         description = Value(description),
         category = Value(category),
-        dateCreated = Value(dateCreated);
+        type = Value(type),
+        dateCreated = Value(dateCreated),
+        dueDate = Value(dueDate);
   static Insertable<Note> custom({
     Expression<int> id,
     Expression<String> title,
     Expression<String> description,
     Expression<String> category,
+    Expression<String> type,
     Expression<DateTime> dateCreated,
+    Expression<DateTime> dueDate,
     Expression<bool> completed,
+    Expression<bool> important,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (title != null) 'title': title,
       if (description != null) 'description': description,
       if (category != null) 'category': category,
+      if (type != null) 'type': type,
       if (dateCreated != null) 'date_created': dateCreated,
+      if (dueDate != null) 'due_date': dueDate,
       if (completed != null) 'completed': completed,
+      if (important != null) 'important': important,
     });
   }
 
@@ -209,15 +279,21 @@ class NotesCompanion extends UpdateCompanion<Note> {
       Value<String> title,
       Value<String> description,
       Value<String> category,
+      Value<String> type,
       Value<DateTime> dateCreated,
-      Value<bool> completed}) {
+      Value<DateTime> dueDate,
+      Value<bool> completed,
+      Value<bool> important}) {
     return NotesCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
       category: category ?? this.category,
+      type: type ?? this.type,
       dateCreated: dateCreated ?? this.dateCreated,
+      dueDate: dueDate ?? this.dueDate,
       completed: completed ?? this.completed,
+      important: important ?? this.important,
     );
   }
 
@@ -236,11 +312,20 @@ class NotesCompanion extends UpdateCompanion<Note> {
     if (category.present) {
       map['category'] = Variable<String>(category.value);
     }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
     if (dateCreated.present) {
       map['date_created'] = Variable<DateTime>(dateCreated.value);
     }
+    if (dueDate.present) {
+      map['due_date'] = Variable<DateTime>(dueDate.value);
+    }
     if (completed.present) {
       map['completed'] = Variable<bool>(completed.value);
+    }
+    if (important.present) {
+      map['important'] = Variable<bool>(important.value);
     }
     return map;
   }
@@ -252,8 +337,11 @@ class NotesCompanion extends UpdateCompanion<Note> {
           ..write('title: $title, ')
           ..write('description: $description, ')
           ..write('category: $category, ')
+          ..write('type: $type, ')
           ..write('dateCreated: $dateCreated, ')
-          ..write('completed: $completed')
+          ..write('dueDate: $dueDate, ')
+          ..write('completed: $completed, ')
+          ..write('important: $important')
           ..write(')'))
         .toString();
   }
@@ -300,6 +388,14 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
     return GeneratedTextColumn('category', $tableName, false, minTextLength: 5);
   }
 
+  final VerificationMeta _typeMeta = const VerificationMeta('type');
+  GeneratedTextColumn _type;
+  @override
+  GeneratedTextColumn get type => _type ??= _constructType();
+  GeneratedTextColumn _constructType() {
+    return GeneratedTextColumn('type', $tableName, false, minTextLength: 5);
+  }
+
   final VerificationMeta _dateCreatedMeta =
       const VerificationMeta('dateCreated');
   GeneratedDateTimeColumn _dateCreated;
@@ -314,6 +410,18 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
     );
   }
 
+  final VerificationMeta _dueDateMeta = const VerificationMeta('dueDate');
+  GeneratedDateTimeColumn _dueDate;
+  @override
+  GeneratedDateTimeColumn get dueDate => _dueDate ??= _constructDueDate();
+  GeneratedDateTimeColumn _constructDueDate() {
+    return GeneratedDateTimeColumn(
+      'due_date',
+      $tableName,
+      false,
+    );
+  }
+
   final VerificationMeta _completedMeta = const VerificationMeta('completed');
   GeneratedBoolColumn _completed;
   @override
@@ -323,9 +431,27 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
         defaultValue: Constant(false));
   }
 
+  final VerificationMeta _importantMeta = const VerificationMeta('important');
+  GeneratedBoolColumn _important;
   @override
-  List<GeneratedColumn> get $columns =>
-      [id, title, description, category, dateCreated, completed];
+  GeneratedBoolColumn get important => _important ??= _constructImportant();
+  GeneratedBoolColumn _constructImportant() {
+    return GeneratedBoolColumn('important', $tableName, false,
+        defaultValue: Constant(false));
+  }
+
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        title,
+        description,
+        category,
+        type,
+        dateCreated,
+        dueDate,
+        completed,
+        important
+      ];
   @override
   $NotesTable get asDslTable => this;
   @override
@@ -360,6 +486,12 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
     } else if (isInserting) {
       context.missing(_categoryMeta);
     }
+    if (data.containsKey('type')) {
+      context.handle(
+          _typeMeta, type.isAcceptableOrUnknown(data['type'], _typeMeta));
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
     if (data.containsKey('date_created')) {
       context.handle(
           _dateCreatedMeta,
@@ -368,9 +500,19 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
     } else if (isInserting) {
       context.missing(_dateCreatedMeta);
     }
+    if (data.containsKey('due_date')) {
+      context.handle(_dueDateMeta,
+          dueDate.isAcceptableOrUnknown(data['due_date'], _dueDateMeta));
+    } else if (isInserting) {
+      context.missing(_dueDateMeta);
+    }
     if (data.containsKey('completed')) {
       context.handle(_completedMeta,
           completed.isAcceptableOrUnknown(data['completed'], _completedMeta));
+    }
+    if (data.containsKey('important')) {
+      context.handle(_importantMeta,
+          important.isAcceptableOrUnknown(data['important'], _importantMeta));
     }
     return context;
   }

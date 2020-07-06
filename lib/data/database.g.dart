@@ -18,13 +18,13 @@ class Note extends DataClass implements Insertable<Note> {
   final bool completed;
   final bool important;
   Note(
-      {@required this.id,
+      {this.id,
       @required this.title,
       @required this.description,
       @required this.category,
       @required this.type,
       @required this.dateCreated,
-      @required this.dueDate,
+      this.dueDate,
       @required this.completed,
       @required this.important});
   factory Note.fromData(Map<String, dynamic> data, GeneratedDatabase db,
@@ -241,15 +241,14 @@ class NotesCompanion extends UpdateCompanion<Note> {
     @required String category,
     @required String type,
     @required DateTime dateCreated,
-    @required DateTime dueDate,
+    this.dueDate = const Value.absent(),
     this.completed = const Value.absent(),
     this.important = const Value.absent(),
   })  : title = Value(title),
         description = Value(description),
         category = Value(category),
         type = Value(type),
-        dateCreated = Value(dateCreated),
-        dueDate = Value(dueDate);
+        dateCreated = Value(dateCreated);
   static Insertable<Note> custom({
     Expression<int> id,
     Expression<String> title,
@@ -385,7 +384,11 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
   @override
   GeneratedTextColumn get category => _category ??= _constructCategory();
   GeneratedTextColumn _constructCategory() {
-    return GeneratedTextColumn('category', $tableName, false, minTextLength: 5);
+    return GeneratedTextColumn(
+      'category',
+      $tableName,
+      false,
+    );
   }
 
   final VerificationMeta _typeMeta = const VerificationMeta('type');
@@ -393,7 +396,11 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
   @override
   GeneratedTextColumn get type => _type ??= _constructType();
   GeneratedTextColumn _constructType() {
-    return GeneratedTextColumn('type', $tableName, false, minTextLength: 5);
+    return GeneratedTextColumn(
+      'type',
+      $tableName,
+      false,
+    );
   }
 
   final VerificationMeta _dateCreatedMeta =
@@ -418,7 +425,7 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
     return GeneratedDateTimeColumn(
       'due_date',
       $tableName,
-      false,
+      true,
     );
   }
 
@@ -503,8 +510,6 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
     if (data.containsKey('due_date')) {
       context.handle(_dueDateMeta,
           dueDate.isAcceptableOrUnknown(data['due_date'], _dueDateMeta));
-    } else if (isInserting) {
-      context.missing(_dueDateMeta);
     }
     if (data.containsKey('completed')) {
       context.handle(_completedMeta,

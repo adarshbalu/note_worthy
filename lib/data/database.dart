@@ -7,10 +7,10 @@ class Notes extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get title => text().withLength(min: 0, max: 50)();
   TextColumn get description => text().withLength(min: 5)();
-  TextColumn get category => text().withLength(min: 5)();
-  TextColumn get type => text().withLength(min: 5)();
+  TextColumn get category => text()();
+  TextColumn get type => text()();
   DateTimeColumn get dateCreated => dateTime()();
-  DateTimeColumn get dueDate => dateTime()();
+  DateTimeColumn get dueDate => dateTime().nullable()();
   BoolColumn get completed => boolean().withDefault(Constant(false))();
   BoolColumn get important => boolean().withDefault(Constant(false))();
 }

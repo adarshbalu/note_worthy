@@ -27,3 +27,7 @@ const TextStyle kImportantCardBodyTextStyle = TextStyle(
 enum Category {
   None,
 }
+
+enum Type {
+  None,
+}

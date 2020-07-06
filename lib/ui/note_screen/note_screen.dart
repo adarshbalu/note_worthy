@@ -1,37 +1,45 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:note_worthy/data/database.dart';
+import 'package:provider/provider.dart';
 
 class NoteScreen extends StatefulWidget {
+  final Note note;
+
+  const NoteScreen({Key key, this.note}) : super(key: key);
   @override
   _NoteScreenState createState() => _NoteScreenState();
 }
 
 class _NoteScreenState extends State<NoteScreen> {
   TextEditingController title, body;
+  Note note;
   @override
   void initState() {
-    title = TextEditingController();
-    body = TextEditingController();
+
+    title = TextEditingController(text: widget.note.title ?? '');
+    body = TextEditingController(text: widget.note.description ?? '');
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    final database = Provider.of<AppDatabase>(context);
     TextStyle textStyle = Theme.of(context).textTheme.bodyText1;
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit Note'),
         centerTitle: true,
         actions: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: Icon(
-              Icons.notification_important,
-              size: 40,
-              color: Colors.red,
-            ),
-          )
+//          Padding(
+//            padding: const EdgeInsets.only(right: 8.0),
+//            child: Icon(
+//              Icons.notification_important,
+//              size: 40,
+//              color: Colors.red,
+//            ),
+//          )
         ],
       ),
       body: SingleChildScrollView(
@@ -58,7 +66,6 @@ class _NoteScreenState extends State<NoteScreen> {
                         child: TextField(
                           controller: title,
                           style: textStyle.copyWith(fontSize: 21),
-                          onChanged: (value) {},
                           decoration: InputDecoration(
                             hintText: 'Title',
                             labelStyle: textStyle.copyWith(fontSize: 21),
@@ -76,7 +83,6 @@ class _NoteScreenState extends State<NoteScreen> {
                         child: TextField(
                           controller: body,
                           style: textStyle.copyWith(fontSize: 18),
-                          onChanged: (value) {},
                           minLines: 11,
                           maxLines: 11,
                           decoration: InputDecoration(
@@ -141,7 +147,29 @@ class _NoteScreenState extends State<NoteScreen> {
             RaisedButton.icon(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
-                onPressed: () {},
+                onPressed: () async {
+                  if (widget.note.id == null) {
+                    final note = Note(
+                        completed: false,
+                        important: true,
+                        title: title.text,
+                        description: body.text,
+                        category: 'none',
+                        type: 'none',
+                        dateCreated: DateTime.now(),
+                        dueDate: DateTime.now());
+                    await database.insertNote(note);
+                  } else {
+                    note.copyWith(
+                        title: title.text,
+                        description: body.text,
+                        category: 'none',
+                        type: 'none',
+                        dueDate: DateTime.now());
+                    await database.updateNote(note);
+                  }
+                  Navigator.pop(context);
+                },
                 padding: EdgeInsets.symmetric(vertical: 12, horizontal: 30),
                 color: Colors.green,
                 textColor: Colors.white,

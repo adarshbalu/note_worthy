@@ -15,12 +15,13 @@ class _HomeScreenState extends State<HomeScreen> {
   ScrollController parentController;
   int importantNotes = 0;
   Note _note = Note(
-      category: 'None',
-      type: 'None',
+      category: 'none',
+      type: 'none',
       title: '',
       description: '',
       completed: false,
-      important: true,
+      important: false,
+      dueDate: DateTime.now(),
       dateCreated: DateTime.now());
   @override
   void initState() {
@@ -32,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
     for (var note in noteList) {
       if (note.important) importantNotes++;
     }
+    return importantNotes;
   }
 
   @override
@@ -42,68 +44,110 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text('Notes'),
         centerTitle: true,
       ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            child: StreamBuilder(
-                stream: database.watchAllNotes(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    checkImportantNotes(snapshot.data);
-                    print(importantNotes);
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      scrollDirection: Axis.horizontal,
-                      itemCount: snapshot.data.length,
-                      itemBuilder: (context, index) {
-                        Note note = snapshot.data[index];
-                        if (note.important)
-                          return ImportantCard(
-                            title: note.title,
-                            body: note.description,
+      body: FutureBuilder(
+          future: database.getAllNotes(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData && !(snapshot.hasError)) {
+              return Column(
+                children: <Widget>[
+                  StreamBuilder(
+                      stream: database.watchAllNotes(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          if (checkImportantNotes(snapshot.data) > 0) {
+                            return Expanded(
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                scrollDirection: Axis.horizontal,
+                                itemCount: snapshot.data.length,
+                                itemBuilder: (context, index) {
+                                  Note note = snapshot.data[index];
+                                  if (note.important) {
+                                    return GestureDetector(
+                                      onTap: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => NoteScreen(
+                                              note: note,
+                                            ),
+                                          )),
+                                      child: ImportantCard(
+                                        title: note.title,
+                                        body: note.description,
+                                      ),
+                                    );
+                                  } else
+                                    return SizedBox();
+                                },
+                              ),
+                            );
+                          } else
+                            return EmptyImportantNote();
+                        } else if (snapshot.connectionState !=
+                            ConnectionState.done)
+                          return Center(
+                            child: CircularProgressIndicator(),
                           );
                         else
                           return SizedBox();
-                      },
-                    );
-                  } else
-                    return SizedBox();
-                }),
-          ),
-          SizedBox(
-            height: 8,
-          ),
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Text(
-              'All Notes',
-              style: TextStyle(fontSize: 30),
-            ),
-          ),
-          StreamBuilder(
-              stream: database.watchAllNotes(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  print(snapshot.data);
-                  return Expanded(
-                    child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: snapshot.data.length,
-                        itemBuilder: (context, index) {
-                          Note note = snapshot.data[index];
-                          return NoteCard(
-                              title: note.title,
-                              date: note.dateCreated.toString(),
-                              type: note.type,
-                              category: note.category,
-                              body: note.description);
-                        }),
-                  );
-                } else
-                  return SizedBox();
-              }),
-        ],
-      ),
+                      }),
+                  SizedBox(
+                    height: 8,
+                  ),
+                  StreamBuilder(
+                      stream: database.watchAllNotes(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          if (snapshot.data.length == 0) {
+                            return Container(
+                              alignment: Alignment.center,
+                              child: Text('No Notes saved. Add now '),
+                            );
+                          }
+                          return Expanded(
+                            child: CupertinoScrollbar(
+                              child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: snapshot.data.length,
+                                  itemBuilder: (context, index) {
+                                    Note note = snapshot.data[index];
+                                    return Dismissible(
+                                      key: Key(note.id.toString()),
+                                      onDismissed: (direction) {
+                                        database.deleteNote(note);
+                                      },
+                                      child: GestureDetector(
+                                        onTap: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => NoteScreen(
+                                                note: note,
+                                              ),
+                                            )),
+                                        child: NoteCard(
+                                            title: note.title,
+                                            date: note.dateCreated,
+                                            type: note.type,
+                                            category: note.category,
+                                            body: note.description),
+                                      ),
+                                    );
+                                  }),
+                            ),
+                          );
+                        } else if (snapshot.connectionState !=
+                            ConnectionState.done)
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        else
+                          return SizedBox();
+                      }),
+                ],
+              );
+            } else
+              return Center(child: CircularProgressIndicator());
+          }),
       bottomNavigationBar: AddWidget(
           onTap: () => Navigator.push(
               context,

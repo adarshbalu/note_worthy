@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:note_worthy/utils/constants.dart';
 
 class ImportantCard extends StatelessWidget {
@@ -71,7 +72,8 @@ class AddWidget extends StatelessWidget {
 }
 
 class NoteCard extends StatelessWidget {
-  final String title, date, body, type, category;
+  final String title, body, type, category;
+  final DateTime date;
   const NoteCard({
     Key key,
     this.title,
@@ -83,6 +85,7 @@ class NoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final DateFormat formatter = DateFormat('dd-MM-yyyy');
     return Card(
       elevation: 2,
       margin: EdgeInsets.all(8),
@@ -101,18 +104,31 @@ class NoteCard extends StatelessWidget {
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(left: 8.0, top: 8),
-                    child: Text(title),
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                          fontWeight: FontWeight.w300,
+                          fontSize: 20,
+                          color: Colors.blue),
+                    ),
                   ),
                 ),
                 Padding(
                   padding: EdgeInsets.only(right: 8.0, top: 8),
-                  child: Text(date),
+                  child: Text(formatter.format(date)),
                 )
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(body),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  body,
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 18),
+                  textAlign: TextAlign.left,
+                ),
+              ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -120,18 +136,42 @@ class NoteCard extends StatelessWidget {
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.only(left: 8.0, top: 8),
-                    child: Text(category ?? 'None'),
+                    child: Text(category == 'none' ? '' : category),
                   ),
                 ),
                 Padding(
                   padding: EdgeInsets.only(right: 8.0, top: 8),
-                  child: Text(type ?? 'General'),
+                  child: Text(type == 'none' ? '' : type),
                 )
               ],
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class EmptyImportantNote extends StatelessWidget {
+  const EmptyImportantNote({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+          padding: EdgeInsets.all(8.0),
+          decoration: BoxDecoration(
+              color: Colors.indigo.shade400,
+              borderRadius: BorderRadius.circular(10)),
+          width: MediaQuery.of(context).size.width / 2.3,
+          height: MediaQuery.of(context).size.height / 3.4,
+          alignment: Alignment.center,
+          child: Text(
+            'No important notes',
+            style: TextStyle(color: Colors.white),
+          )),
     );
   }
 }

@@ -15,9 +15,17 @@ class NoteScreen extends StatefulWidget {
 class _NoteScreenState extends State<NoteScreen> {
   TextEditingController title, body;
   Note note;
+  bool important = false, completed = false;
+  Color yes = Colors.green, no = Colors.blue;
+  final _formKey = GlobalKey<FormState>();
+  String category, type;
   @override
   void initState() {
-
+    note = widget.note;
+    completed = note.completed;
+    important = note.important;
+    category = note.category ?? 'none';
+    type = note.type ?? 'none';
     title = TextEditingController(text: widget.note.title ?? '');
     body = TextEditingController(text: widget.note.description ?? '');
     super.initState();
@@ -29,156 +37,212 @@ class _NoteScreenState extends State<NoteScreen> {
     TextStyle textStyle = Theme.of(context).textTheme.bodyText1;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Note'),
-        centerTitle: true,
+        automaticallyImplyLeading: false,
+        title: Padding(
+          padding: EdgeInsets.only(left: 8.0),
+          child: Text('Edit Note'),
+        ),
         actions: <Widget>[
-//          Padding(
-//            padding: const EdgeInsets.only(right: 8.0),
-//            child: Icon(
-//              Icons.notification_important,
-//              size: 40,
-//              color: Colors.red,
-//            ),
-//          )
+          IconButton(
+            onPressed: () {
+              setState(() {
+                if (important)
+                  important = false;
+                else
+                  important = true;
+              });
+            },
+            icon: Icon(
+              Icons.add_alert,
+              size: 35,
+              color: important ? yes : no,
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              setState(() {
+                if (completed)
+                  completed = false;
+                else
+                  completed = true;
+              });
+            },
+            icon: Icon(
+              Icons.done,
+              size: 35,
+              color: completed ? yes : no,
+            ),
+          )
         ],
       ),
       body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Padding(
-              padding: EdgeInsets.only(
-                  top: 10.0, left: 10.0, right: 10.0, bottom: 10),
-              child: Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20)),
-                elevation: 2,
-                child: Container(
-                  constraints: BoxConstraints(
-                      minHeight: MediaQuery.of(context).size.height / 1.5),
-                  padding: const EdgeInsets.all(8.0),
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: <Widget>[
-                      Padding(
-                        padding: EdgeInsets.only(
-                            left: 8, right: 8, top: 15.0, bottom: 0),
-                        child: TextField(
-                          controller: title,
-                          style: textStyle.copyWith(fontSize: 21),
-                          decoration: InputDecoration(
-                            hintText: 'Title',
-                            labelStyle: textStyle.copyWith(fontSize: 21),
-                            border: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            errorBorder: InputBorder.none,
-                            disabledBorder: InputBorder.none,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: EdgeInsets.only(
+                    top: 10.0, left: 10.0, right: 10.0, bottom: 10),
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20)),
+                  elevation: 2,
+                  child: Container(
+                    constraints: BoxConstraints(
+                        minHeight: MediaQuery.of(context).size.height / 1.5),
+                    padding: const EdgeInsets.all(8.0),
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: <Widget>[
+                        Padding(
+                          padding: EdgeInsets.only(
+                              left: 8, right: 8, top: 15.0, bottom: 0),
+                          child: TextFormField(
+                            onChanged: (v) {
+                              _formKey.currentState.validate();
+                            },
+                            validator: (value) {
+                              if (value.length > 50) {
+                                return 'Title should be less than 50 characters';
+                              }
+                              return null;
+                            },
+                            controller: title,
+                            style: textStyle.copyWith(fontSize: 21),
+                            decoration: InputDecoration(
+                              hintText: 'Title',
+                              labelStyle: textStyle.copyWith(fontSize: 21),
+                              border: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              errorBorder: InputBorder.none,
+                              disabledBorder: InputBorder.none,
+                            ),
                           ),
                         ),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(
-                            left: 8, right: 8, top: 0, bottom: 0.0),
-                        child: TextField(
-                          controller: body,
-                          style: textStyle.copyWith(fontSize: 18),
-                          minLines: 11,
-                          maxLines: 11,
-                          decoration: InputDecoration(
-                            hintText: 'Note',
-                            labelStyle: textStyle.copyWith(fontSize: 18),
-                            border: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            errorBorder: InputBorder.none,
-                            disabledBorder: InputBorder.none,
+                        Padding(
+                          padding: EdgeInsets.only(
+                              left: 8, right: 8, top: 0, bottom: 0.0),
+                          child: TextFormField(
+                            validator: (value) {
+                              if (value.isEmpty) {
+                                return 'Please enter note details';
+                              }
+                              if (value.length < 5) {
+                                return 'Note must be more than 5 characters';
+                              }
+                              return null;
+                            },
+                            controller: body,
+                            onChanged: (v) {
+                              _formKey.currentState.validate();
+                            },
+                            style: textStyle.copyWith(fontSize: 18),
+                            minLines: 11,
+                            maxLines: 11,
+                            decoration: InputDecoration(
+                              hintText: 'Note',
+                              labelStyle: textStyle.copyWith(fontSize: 18),
+                              border: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              errorBorder: InputBorder.none,
+                              disabledBorder: InputBorder.none,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Padding(
-                  padding: EdgeInsets.only(left: 8.0),
-                  child: DropdownButton(
-                    hint: Text('Category'),
-                    underline: SizedBox(),
-                    onChanged: (v) {},
-                    items: [
-                      DropdownMenuItem(
-                        value: 'None',
-                        child: Text('None'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Home',
-                        child: Text('Home'),
-                      ),
-                    ],
-                    value: 'None',
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Padding(
+                    padding: EdgeInsets.only(left: 8.0),
+                    child: DropdownButton(
+                      hint: Text('Category'),
+                      underline: SizedBox(),
+                      onChanged: (v) {
+                        setState(() {
+                          category = v;
+                        });
+                      },
+                      items: [
+                        DropdownMenuItem(
+                          value: 'none',
+                          child: Text('None'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Home',
+                          child: Text('Home'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'Work',
+                          child: Text('Work'),
+                        ),
+                      ],
+                      value: category,
+                    ),
                   ),
-                ),
-                Padding(
-                  padding: EdgeInsets.only(right: 8.0),
-                  child: DropdownButton(
-                    hint: Text('Category'),
-                    underline: SizedBox(),
-                    onChanged: (v) {},
-                    items: [
-                      DropdownMenuItem(
-                        value: 'None',
-                        child: Text('None'),
-                      ),
-                      DropdownMenuItem(
-                        value: 'Home',
-                        child: Text('To-do'),
-                      ),
-                    ],
-                    value: 'None',
-                  ),
-                )
-              ],
-            ),
-            RaisedButton.icon(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-                onPressed: () async {
-                  if (widget.note.id == null) {
-                    final note = Note(
-                        completed: false,
-                        important: true,
-                        title: title.text,
-                        description: body.text,
-                        category: 'none',
-                        type: 'none',
-                        dateCreated: DateTime.now(),
-                        dueDate: DateTime.now());
-                    await database.insertNote(note);
-                  } else {
-                    note.copyWith(
-                        title: title.text,
-                        description: body.text,
-                        category: 'none',
-                        type: 'none',
-                        dueDate: DateTime.now());
-                    await database.updateNote(note);
-                  }
-                  Navigator.pop(context);
-                },
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 30),
-                color: Colors.green,
-                textColor: Colors.white,
-                icon: Icon(Icons.save),
-                label: Text(
-                  'Save Note',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ))
-          ],
+                  Padding(
+                    padding: EdgeInsets.only(right: 8.0),
+                    child: DropdownButton(
+                      hint: Text('Type'),
+                      underline: SizedBox(),
+                      onChanged: (v) {
+                        setState(() {
+                          type = v;
+                        });
+                      },
+                      items: [
+                        DropdownMenuItem(
+                          value: 'none',
+                          child: Text('None'),
+                        ),
+                        DropdownMenuItem(
+                          value: 'TO-DO',
+                          child: Text('To-do'),
+                        ),
+                      ],
+                      value: type,
+                    ),
+                  )
+                ],
+              ),
+              RaisedButton.icon(
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                  onPressed: () async {
+                    if (_formKey.currentState.validate()) {
+                      final Note newNote = note.copyWith(
+                          important: important,
+                          title: title.text,
+                          description: body.text,
+                          type: type,
+                          category: category,
+                          completed: completed);
+                      List<Note> notes = await database.getAllNotes();
+                      if (!notes.contains(note)) {
+                        await database.insertNote(newNote);
+                      } else {
+                        await database.updateNote(newNote);
+                      }
+                      Navigator.pop(context);
+                    }
+                  },
+                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 30),
+                  color: Colors.green,
+                  textColor: Colors.white,
+                  icon: Icon(Icons.save),
+                  label: Text(
+                    'Save Note',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ))
+            ],
+          ),
         ),
       ),
     );

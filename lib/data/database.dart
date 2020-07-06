@@ -5,8 +5,8 @@ part 'database.g.dart';
 
 class Notes extends Table {
   IntColumn get id => integer().autoIncrement()();
-  TextColumn get title => text().withLength(min: 0, max: 50)();
-  TextColumn get description => text().withLength(min: 5)();
+  TextColumn get title => text()();
+  TextColumn get description => text()();
   TextColumn get category => text()();
   TextColumn get type => text()();
   DateTimeColumn get dateCreated => dateTime()();
@@ -24,7 +24,7 @@ class AppDatabase extends _$AppDatabase {
         )));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   Future<List<Note>> getAllNotes() => select(notes).get();
 

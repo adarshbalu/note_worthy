@@ -18,7 +18,7 @@ class Note extends DataClass implements Insertable<Note> {
   final bool completed;
   final bool important;
   Note(
-      {this.id,
+      {@required this.id,
       @required this.title,
       @required this.description,
       @required this.category,
@@ -364,8 +364,11 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
   @override
   GeneratedTextColumn get title => _title ??= _constructTitle();
   GeneratedTextColumn _constructTitle() {
-    return GeneratedTextColumn('title', $tableName, false,
-        minTextLength: 0, maxTextLength: 50);
+    return GeneratedTextColumn(
+      'title',
+      $tableName,
+      false,
+    );
   }
 
   final VerificationMeta _descriptionMeta =
@@ -375,8 +378,11 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
   GeneratedTextColumn get description =>
       _description ??= _constructDescription();
   GeneratedTextColumn _constructDescription() {
-    return GeneratedTextColumn('description', $tableName, false,
-        minTextLength: 5);
+    return GeneratedTextColumn(
+      'description',
+      $tableName,
+      false,
+    );
   }
 
   final VerificationMeta _categoryMeta = const VerificationMeta('category');

@@ -99,9 +99,26 @@ class _HomeScreenState extends State<HomeScreen> {
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           if (snapshot.data.length == 0) {
-                            return Container(
-                              alignment: Alignment.center,
-                              child: Text('No Notes saved. Add now '),
+                            return Column(
+                              children: <Widget>[
+                                Container(
+                                    decoration: BoxDecoration(
+                                        image: DecorationImage(
+                                            image: AssetImage(
+                                      'assets/add_note.png',
+                                    ))),
+                                    child: SizedBox(
+                                      width: MediaQuery.of(context).size.width,
+                                      height:
+                                          MediaQuery.of(context).size.height /
+                                              2,
+                                    )),
+                                Text('No Notes added.'),
+                                SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height / 5,
+                                )
+                              ],
                             );
                           }
                           return Expanded(

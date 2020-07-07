@@ -13,7 +13,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   ScrollController parentController;
-  int importantNotes = 0;
+  int importantNotes;
   Note _note = Note(
       category: 'none',
       type: 'none',
@@ -27,11 +27,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     parentController = ScrollController();
     super.initState();
+    importantNotes = 0;
   }
 
   checkImportantNotes(List<Note> noteList) {
     for (var note in noteList) {
-      if (note.important) importantNotes++;
+      if (note.important && !note.completed) importantNotes++;
     }
     return importantNotes;
   }
@@ -48,49 +49,49 @@ class _HomeScreenState extends State<HomeScreen> {
           future: database.getAllNotes(),
           builder: (context, snapshot) {
             if (snapshot.hasData && !(snapshot.hasError)) {
+              checkImportantNotes(snapshot.data);
               return Column(
                 children: <Widget>[
-                  StreamBuilder(
-                      stream: database.watchAllNotes(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          if (checkImportantNotes(snapshot.data) > 0) {
-                            return Expanded(
-                              child: ListView.builder(
-                                shrinkWrap: true,
-                                scrollDirection: Axis.horizontal,
-                                itemCount: snapshot.data.length,
-                                itemBuilder: (context, index) {
-                                  Note note = snapshot.data[index];
-                                  if (note.important) {
-                                    return GestureDetector(
-                                      onTap: () => Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => NoteScreen(
-                                              note: note,
-                                            ),
-                                          )),
-                                      child: ImportantCard(
-                                        title: note.title,
-                                        body: note.description,
-                                      ),
-                                    );
-                                  } else
-                                    return SizedBox();
-                                },
-                              ),
-                            );
-                          } else
-                            return EmptyImportantNote();
-                        } else if (snapshot.connectionState !=
-                            ConnectionState.done)
-                          return Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        else
-                          return SizedBox();
-                      }),
+                  importantNotes > 0
+                      ? StreamBuilder(
+                          stream: database.watchAllNotes(),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              return Expanded(
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: snapshot.data.length,
+                                  itemBuilder: (context, index) {
+                                    Note note = snapshot.data[index];
+                                    if (note.important) {
+                                      return GestureDetector(
+                                        onTap: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => NoteScreen(
+                                                note: note,
+                                              ),
+                                            )),
+                                        child: ImportantCard(
+                                          title: note.title,
+                                          body: note.description,
+                                        ),
+                                      );
+                                    } else
+                                      return SizedBox();
+                                  },
+                                ),
+                              );
+                            } else if (snapshot.connectionState !=
+                                ConnectionState.done)
+                              return Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            else
+                              return SizedBox();
+                          })
+                      : SizedBox(),
                   SizedBox(
                     height: 8,
                   ),

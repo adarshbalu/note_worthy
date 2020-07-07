@@ -151,27 +151,3 @@ class NoteCard extends StatelessWidget {
     );
   }
 }
-
-class EmptyImportantNote extends StatelessWidget {
-  const EmptyImportantNote({
-    Key key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-          padding: EdgeInsets.all(8.0),
-          decoration: BoxDecoration(
-              color: Colors.indigo.shade400,
-              borderRadius: BorderRadius.circular(10)),
-          width: MediaQuery.of(context).size.width / 2.3,
-          height: MediaQuery.of(context).size.height / 3.4,
-          alignment: Alignment.center,
-          child: Text(
-            'No important notes',
-            style: TextStyle(color: Colors.white),
-          )),
-    );
-  }
-}

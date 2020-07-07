@@ -46,21 +46,6 @@ class _NoteScreenState extends State<NoteScreen> {
           IconButton(
             onPressed: () {
               setState(() {
-                if (important)
-                  important = false;
-                else
-                  important = true;
-              });
-            },
-            icon: Icon(
-              Icons.add_alert,
-              size: 35,
-              color: important ? yes : no,
-            ),
-          ),
-          IconButton(
-            onPressed: () {
-              setState(() {
                 if (completed)
                   completed = false;
                 else
@@ -68,11 +53,26 @@ class _NoteScreenState extends State<NoteScreen> {
               });
             },
             icon: Icon(
-              Icons.done,
+              Icons.assignment_turned_in,
               size: 35,
               color: completed ? yes : no,
             ),
-          )
+          ),
+          IconButton(
+            onPressed: () {
+              setState(() {
+                if (important)
+                  important = false;
+                else
+                  important = true;
+              });
+            },
+            icon: Icon(
+              Icons.favorite,
+              size: 35,
+              color: important ? yes : no,
+            ),
+          ),
         ],
       ),
       body: SingleChildScrollView(
